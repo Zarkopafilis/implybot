@@ -19,7 +19,7 @@ train_iterator = DataLoader(dataset=train_iterator, batch_size=BATCH_SIZE, shuff
 N_EPOCHS = 10
 CLIP = 1
 
-model = train_util.make_nn(loaders.get_emb_len())
+model = train_util.make_nn((MAX_MSG_LEN, loaders.get_emb_len()))
 optimizer = optim.Adam(model.parameters())
 
 criterion = nn.MSELoss()  # make sure this ignores the <sos> and <eos> tokens
