@@ -3,6 +3,8 @@
 *.csv
 *.DS_Store
 *.bin
+*.vec
+
 .idea
 
 # Byte-compiled / optimized / DLL files
