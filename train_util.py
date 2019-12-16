@@ -67,7 +67,7 @@ def train(model: nn.Module, iterator,
         output = output[1:].view(-1, output.shape[-1])
         trg = trg[1:].view(-1)
 
-        loss = criterion(output, trg)
+        loss = criterion(output, trg.view(-1, 300))
 
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
@@ -92,7 +92,7 @@ def evaluate(model: nn.Module,
             src = batch.src
             trg = batch.trg
 
-            output = model(src, trg, 0) #turn off teacher forcing
+            output = model(src, trg, 0)  # turn off teacher forcing
 
             output = output[1:].view(-1, output.shape[-1])
             trg = trg[1:].view(-1)

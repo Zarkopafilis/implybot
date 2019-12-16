@@ -10,8 +10,6 @@ import math
 def load_fasttext_model():
     print("Loading fasttext model...")
     ft = fasttext.load_model("C:\\Users\\zarkopafilis\\Desktop\\implybot\\pretrained\\cc.en.300.bin")
-    vocab_size = len(ft.words)
-
     print("Loaded {} words, with {} vector length encoding.".format(len(ft.words), ft.get_dimension()))
     return ft
 
@@ -32,11 +30,11 @@ def min_distance(emb, ft):
 
 def embeddings_to_text(embeddings, ft):
     words = [i for i in map(min_distance, embeddings, ft)]
-    return words.join(' ')
+    return ' '.join(words)
 
 
 def make_embedding(message, max_len, ft):
-    tokens = message[0].split()
+    tokens = message.split()
     embs = [i for i in map(lambda x: ft[x], tokens)]
     embs.insert(0, ft['<sos>'])
 
@@ -71,7 +69,7 @@ class DiscordDataset(Dataset):
 
             idx = [idx, idx+1]
 
-        msgs = self.chat_log.iloc[idx, :]
+        msgs = self.chat_log.iloc[idx, :].copy()
         msgs = msgs.values.tolist()
         # strip to max length
         msgs = list(map(lambda x: make_embedding(x, self.max_len, self.ft), msgs))

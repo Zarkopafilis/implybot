@@ -137,7 +137,7 @@ class Decoder(nn.Module):
 
 class Seq2Seq(nn.Module):
     def __init__(self,
-                 encoder: nn.Module,
+                 encoder: Encoder,
                  decoder: nn.Module,
                  device: torch.device):
         super().__init__()

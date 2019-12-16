@@ -21,6 +21,7 @@ ft = loaders.load_fasttext_model()
 print("> Preparing Dataset Loader")
 train_iterator = loaders.DiscordDataset("C:\\Users\\zarkopafilis\\Desktop\\implybot\\discord.txt", MAX_MSG_LEN, ft)
 
+# DO NOT add more than 1 worker here. FastText can't be pickled and its slow to load it on every different process.
 train_iterator = DataLoader(dataset=train_iterator, batch_size=BATCH_SIZE, shuffle=True)
 
 print("> Making Model")
