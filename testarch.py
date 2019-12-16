@@ -12,18 +12,22 @@ print("Starting...")
 
 MAX_MSG_LEN = 20
 BATCH_SIZE = 32
-train_iterator = loaders.DiscordDataset("C:\\Users\\zarkopafilis\\Desktop\\implybot\\discord.txt", MAX_MSG_LEN)
-
-train_iterator = DataLoader(dataset=train_iterator, batch_size=BATCH_SIZE, shuffle=True)
 
 N_EPOCHS = 10
 CLIP = 1
 
-model = train_util.make_nn((MAX_MSG_LEN, loaders.get_emb_len()))
+print("> Preparing Dataset Loader")
+train_iterator = loaders.DiscordDataset("C:\\Users\\zarkopafilis\\Desktop\\implybot\\discord.txt", MAX_MSG_LEN)
+
+train_iterator = DataLoader(dataset=train_iterator, batch_size=BATCH_SIZE, shuffle=True)
+
+print("> Making Model")
+model = train_util.make_nn(loaders.get_emb_len())
 optimizer = optim.Adam(model.parameters())
 
 criterion = nn.MSELoss()  # make sure this ignores the <sos> and <eos> tokens
 
+print("> Training start")
 for epoch in range(N_EPOCHS):
     start_time = time.time()
 
@@ -35,15 +39,24 @@ for epoch in range(N_EPOCHS):
     print(f'Epoch: {epoch+1:02} | Time: {epoch_mins}m {epoch_secs}s')
     print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {train_util.math.exp(train_loss):7.3f}')
 
+print("> Training finished")
+
+print("> Saving model")
 train_util.torch.save(model, "C:\\Users\\zarkopafilis\\Desktop\\implybot\\torchmodel.pt")
 
 model.eval()
 
-src = train_util.make_embedding("hey bot whatsup?", MAX_MSG_LEN)
-trg = [train_util.SOS_EMBEDDING]
+test_inputs = ["hey bot whatsup?", "marios wyd", "F", "bsd > linux?", "php bad"]
 
-output = model(src, trg, 0)  # turn off teacher forcing
+print("\n> Running test inputs: \n\n")
+for msg in test_inputs:
+    src = train_util.make_embedding(msg, MAX_MSG_LEN)
+    trg = [train_util.SOS_EMBEDDING]
 
-output = output[1:].view(-1, output.shape[-1])
-trg = trg[1:].view(-1)
-print(train_util.embeddings_to_text(trg))
+    output = model(src, trg, 0)  # turn off teacher forcing
+
+    output = output[1:].view(-1, output.shape[-1])
+    trg = trg[1:].view(-1)
+
+    o = train_util.embeddings_to_text(trg);
+    print("Q: {} - A: {}".format(msg, o))

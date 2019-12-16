@@ -41,14 +41,14 @@ def embeddings_to_text(embeddings):
 
 
 def make_embedding(message, max_len):
-    tokens = message.split()
+    tokens = message[0].split()
     embs = [i for i in map(lambda x: ft[x], tokens)]
     embs.insert(0, SOS_EMBEDDING)
 
     l = len(embs)
     length_diff = max_len - l
     if length_diff > 0:
-        embs = embs + EOS_EMBEDDING * length_diff
+        embs = embs + [EOS_EMBEDDING] * length_diff
     else:
         embs = embs[:max_len]
         embs[-1] = EOS_EMBEDDING
@@ -59,8 +59,9 @@ def make_embedding(message, max_len):
 class DiscordDataset(Dataset):
 
     def __init__(self, txt_file, max_len):
-        self.chat_log = pd.read_csv(txt_file)
+        self.chat_log = pd.read_csv(txt_file, header=None)
         self.max_len = max_len
+        print("Loaded {} messages".format(len(self.chat_log)))
 
     def __len__(self):
         return len(self.chat_log)
@@ -68,12 +69,18 @@ class DiscordDataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
+        else:
+            if idx == len(self.chat_log):
+                idx = idx-1
+
+            idx = [idx, idx+1]
 
         msgs = self.chat_log.iloc[idx, :]
+        msgs = msgs.values.tolist()
         # strip to max length
-        msgs = msgs.apply(lambda x: make_embedding(x, self.max_len))
+        msgs = list(map(lambda x: make_embedding(x, self.max_len), msgs))
         msgs = np.array([msgs])
-        msgs = msgs.astype('float32').reshape(-1, EMB_LEN)  # reshape to 1 x veclen maybe
+        msgs = msgs.astype('float32').reshape(-1, EMB_LEN)
 
         sample = {'src': msgs[:-1], 'trg': msgs[1:]}
 
