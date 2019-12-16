@@ -34,7 +34,7 @@ def embeddings_to_text(embeddings, ft):
 
 
 def make_embedding(message, max_len, ft):
-    tokens = message.split()
+    tokens = message[0].split()
     embs = [i for i in map(lambda x: ft[x], tokens)]
     embs.insert(0, ft['<sos>'])
 
@@ -52,7 +52,7 @@ def make_embedding(message, max_len, ft):
 class DiscordDataset(Dataset):
 
     def __init__(self, txt_file, max_len, ft):
-        self.chat_log = pd.read_csv(txt_file, header=None)
+        self.chat_log = pd.read_csv(txt_file, header=None).astype(str)
         self.max_len = max_len
         self.ft = ft
         print("Loaded {} messages".format(len(self.chat_log)))
