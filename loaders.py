@@ -6,23 +6,18 @@ import numpy as np
 from torch.utils.data import Dataset
 import math
 
-print("Loading fasttext model...")
-ft = fasttext.load_model("C:\\Users\\zarkopafilis\\Desktop\\implybot\\pretrained\\cc.en.300.bin")
-vocab_size = len(ft.words)
 
-SOS_EMBEDDING = ft['<sos>']
-EOS_EMBEDDING = ft['<eos>']
-EMB_LEN = ft.get_dimension()
+def load_fasttext_model():
+    print("Loading fasttext model...")
+    ft = fasttext.load_model("C:\\Users\\zarkopafilis\\Desktop\\implybot\\pretrained\\cc.en.300.bin")
+    vocab_size = len(ft.words)
 
-print("Loaded {} words, with {} vector length encoding.".format(len(ft.words), EMB_LEN))
-
-
-def get_emb_len():
-    return EMB_LEN
+    print("Loaded {} words, with {} vector length encoding.".format(len(ft.words), ft.get_dimension()))
+    return ft
 
 
-def min_distance(emb):
-    min_d = EMB_LEN
+def min_distance(emb, ft):
+    min_d = ft.get_dimension()
     min_w = 'yeet'
     for w in ft.words:
         w_e = ft[w]
@@ -35,32 +30,33 @@ def min_distance(emb):
     return min_w
 
 
-def embeddings_to_text(embeddings):
-    words = [i for i in map(min_distance, embeddings)]
+def embeddings_to_text(embeddings, ft):
+    words = [i for i in map(min_distance, embeddings, ft)]
     return words.join(' ')
 
 
-def make_embedding(message, max_len):
+def make_embedding(message, max_len, ft):
     tokens = message[0].split()
     embs = [i for i in map(lambda x: ft[x], tokens)]
-    embs.insert(0, SOS_EMBEDDING)
+    embs.insert(0, ft['<sos>'])
 
     l = len(embs)
     length_diff = max_len - l
     if length_diff > 0:
-        embs = embs + [EOS_EMBEDDING] * length_diff
+        embs = embs + [ft['<eos>']] * length_diff
     else:
         embs = embs[:max_len]
-        embs[-1] = EOS_EMBEDDING
+        embs[-1] = ft['<eos>']
 
     return embs
 
 
 class DiscordDataset(Dataset):
 
-    def __init__(self, txt_file, max_len):
+    def __init__(self, txt_file, max_len, ft):
         self.chat_log = pd.read_csv(txt_file, header=None)
         self.max_len = max_len
+        self.ft = ft
         print("Loaded {} messages".format(len(self.chat_log)))
 
     def __len__(self):
@@ -78,9 +74,9 @@ class DiscordDataset(Dataset):
         msgs = self.chat_log.iloc[idx, :]
         msgs = msgs.values.tolist()
         # strip to max length
-        msgs = list(map(lambda x: make_embedding(x, self.max_len), msgs))
+        msgs = list(map(lambda x: make_embedding(x, self.max_len, self.ft), msgs))
         msgs = np.array([msgs])
-        msgs = msgs.astype('float32').reshape(-1, EMB_LEN)
+        msgs = msgs.astype('float32').reshape(-1, self.ft.get_dimension())
 
         sample = {'src': msgs[:-1], 'trg': msgs[1:]}
 

@@ -10,6 +10,7 @@ from implybot import layers
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 def make_nn(input_dim):
     INPUT_DIM = input_dim
     OUTPUT_DIM = INPUT_DIM
@@ -55,6 +56,9 @@ def train(model: nn.Module, iterator,
 
         src = batch['src']
         trg = batch['trg']
+
+        src = src.to(device, non_blocking=True)
+        trg = trg.to(device, non_blocking=True)
 
         optimizer.zero_grad()
 
