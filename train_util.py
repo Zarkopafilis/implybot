@@ -51,8 +51,11 @@ def train(model: nn.Module, iterator,
     model.train()
 
     epoch_loss = 0
-
+    msg_count = 0
     for _, batch in enumerate(iterator):
+        msg_count += 1
+        if msg_count % 1000 == 0:
+            print(f'Trained for {msg_count} messages')
 
         src = batch['src']
         trg = batch['trg']
@@ -104,8 +107,7 @@ def evaluate(model: nn.Module,
     return epoch_loss / len(iterator)
 
 
-def epoch_time(start_time: int,
-               end_time: int):
+def epoch_time(start_time, end_time):
     elapsed_time = end_time - start_time
     elapsed_mins = int(elapsed_time / 60)
     elapsed_secs = int(elapsed_time - (elapsed_mins * 60))

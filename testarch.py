@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function, division
 import time
+import math
 
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -40,7 +41,7 @@ for epoch in range(N_EPOCHS):
     epoch_mins, epoch_secs = train_util.epoch_time(start_time, end_time)
 
     print(f'Epoch: {epoch+1:02} | Time: {epoch_mins}m {epoch_secs}s')
-    print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {train_util.math.exp(train_loss):7.3f}')
+    print(f'\tTrain Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f}')
 
 print("> Training finished")
 

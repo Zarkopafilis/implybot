@@ -52,19 +52,20 @@ def make_embedding(message, max_len, ft):
 class DiscordDataset(Dataset):
 
     def __init__(self, txt_file, max_len, ft):
-        self.chat_log = pd.read_csv(txt_file, header=None).astype(str)
+        self.chat_log = pd.read_csv(txt_file, header=None, delimiter='             ').astype(str)
         self.max_len = max_len
         self.ft = ft
         print("Loaded {} messages".format(len(self.chat_log)))
 
     def __len__(self):
-        return len(self.chat_log)
+        return len(self.chat_log)-1
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         else:
-            if idx == len(self.chat_log):
+            idx = idx % self.__len__()
+            if idx == self.__len__():
                 idx = idx-1
 
             idx = [idx, idx+1]
